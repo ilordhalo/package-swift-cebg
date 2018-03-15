@@ -20,6 +20,9 @@ import Foundation
 public class CauseEffectBipartiteGraph {
     private var leftNodes = [String: LeftNode]()
     private var rightNodes = [String: RightNode]()
+
+    public init() {
+    }
     
     /**
         数据加载的方法
