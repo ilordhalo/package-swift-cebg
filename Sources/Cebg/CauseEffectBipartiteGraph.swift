@@ -101,6 +101,22 @@ public class CauseEffectBipartiteGraph {
     }
     
     /**
+     根据现有图得出推断结论
+     给定多个事件（多个左结点）
+     返回结论（右结点标识）及概率
+     */
+    public func probabilityWithDetail(withNames leftNodeNames: [String]) -> (String, Float) {
+        var leftNodes = [LeftNode]()
+        for name in leftNodeNames {
+            guard let leftNode = self.leftNodes[name] else {
+                continue
+            }
+            leftNodes.append(leftNode)
+        }
+        return probabilityWithDetail(withNodes: leftNodes)
+    }
+    
+    /**
      将整个图的数据进行封装，返回封装后的json字符串
      */
     public func package() -> String {
@@ -121,7 +137,6 @@ public class CauseEffectBipartiteGraph {
             leftNodes.append(dict)
         }
         response["LeftNode"] = leftNodes
-        print(response)
         let data = try? JSONSerialization.data(withJSONObject: response, options: JSONSerialization.WritingOptions.prettyPrinted)
         let jsonString = String(data: data!, encoding: String.Encoding(rawValue: String.Encoding.utf8.rawValue))
         return jsonString!
@@ -134,7 +149,6 @@ public class CauseEffectBipartiteGraph {
         }
         var best: Float = 0
         var bestk = RightNode("")
-        print(probabilities)
         for (key, value) in probabilities {
             if value > best {
                 best = value
@@ -142,6 +156,23 @@ public class CauseEffectBipartiteGraph {
             }
         }
         return bestk.identifier
+    }
+    
+    func probabilityWithDetail(withNodes leftNodes: [LeftNode]) -> (String, Float) {
+        var probabilities = [RightNode: Float]()
+        for leftNode in leftNodes {
+            probabilities = probabilities + leftNode.probabilities()
+        }
+        var best: Float = 0
+        var bestk = RightNode("")
+        for (key, value) in probabilities {
+            if value > best {
+                best = value
+                bestk = key
+            }
+        }
+        // best/Float(leftNodes.count) 表示平均每个左结点的推断概率
+        return (bestk.identifier, best/Float(leftNodes.count))
     }
     
     private func clean() {
