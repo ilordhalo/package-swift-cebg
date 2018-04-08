@@ -21,6 +21,9 @@ public class CauseEffectBipartiteGraph {
     private var leftNodes = [String: LeftNode]()
     private var rightNodes = [String: RightNode]()
     
+    public init() {
+    }
+    
     /**
      数据加载的方法
      给定因果二分图的json字符串数据，及全部右结点标识。该方法将根据这些数据重建整个二分图结构。
@@ -245,5 +248,4 @@ private func + (lhs: [RightNode: Float], rhs: [RightNode: Float]) -> [RightNode:
     }
     return response
 }
-
 
