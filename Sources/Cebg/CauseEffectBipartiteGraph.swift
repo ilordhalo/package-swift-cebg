@@ -103,7 +103,7 @@ public class CauseEffectBipartiteGraph {
     /**
      根据现有图得出推断结论
      给定多个事件（多个左结点）
-     返回结论（右结点标识）及概率
+     返回结论（右结点标识）及概率 
      */
     public func probabilityWithDetail(withNames leftNodeNames: [String]) -> (String, Float) {
         var leftNodes = [LeftNode]()
