@@ -103,7 +103,7 @@ public class CauseEffectBipartiteGraph {
     /**
      根据现有图得出推断结论
      给定多个事件（多个左结点）
-     返回结论（右结点标识）及概率 
+     返回结论（右结点标识）及概率
      */
     public func probabilityWithDetail(withNames leftNodeNames: [String]) -> (String, Float) {
         var leftNodes = [LeftNode]()
@@ -113,7 +113,9 @@ public class CauseEffectBipartiteGraph {
             }
             leftNodes.append(leftNode)
         }
-        return probabilityWithDetail(withNodes: leftNodes)
+        let response = probabilityWithDetail(withNodes: leftNodes)
+        // 每个事件的推断平均概率
+        return (response.0, response.1/Float(leftNodeNames.count))
     }
     
     /**
@@ -158,7 +160,7 @@ public class CauseEffectBipartiteGraph {
         return bestk.identifier
     }
     
-    func probabilityWithDetail(withNodes leftNodes: [LeftNode]) -> (String, Float) {
+    private func probabilityWithDetail(withNodes leftNodes: [LeftNode]) -> (String, Float) {
         var probabilities = [RightNode: Float]()
         for leftNode in leftNodes {
             probabilities = probabilities + leftNode.probabilities()
@@ -171,8 +173,7 @@ public class CauseEffectBipartiteGraph {
                 bestk = key
             }
         }
-        // best/Float(leftNodes.count) 表示平均每个左结点的推断概率
-        return (bestk.identifier, best/Float(leftNodes.count))
+        return (bestk.identifier, best)
     }
     
     private func clean() {
