@@ -9,36 +9,40 @@
 import Foundation
 
 /**
-    因果二分图的实现类
-    通过给定部分左结点，推断右结点到达的概率
-    可通过新给定的证据（多个左结点->固定右结点）训练，并调整整个二分图的数据，从而影响下次推断的结论
-    使用方法：1.实例化该类
-            2.通过load加载数据
-            3.通过train进行训练，或通过probability来进行推断
-            4.通过package将新的图结构封装，并存储以便下次使用
-*/
+ 因果二分图的实现类
+ 通过给定部分左结点，推断右结点到达的概率
+ 可通过新给定的证据（多个左结点->固定右结点）训练，并调整整个二分图的数据，从而影响下次推断的结论
+ 使用方法：1.实例化该类
+ 2.通过load加载数据
+ 3.通过train进行训练，或通过probability来进行推断
+ 4.通过package将新的图结构封装，并存储以便下次使用
+ */
 public class CauseEffectBipartiteGraph {
     private var leftNodes = [String: LeftNode]()
     private var rightNodes = [String: RightNode]()
-
-    public init() {
-    }
     
     /**
-        数据加载的方法
-        给定因果二分图的json字符串数据，及全部右结点标识。该方法将根据这些数据重建整个二分图结构。
-    */
-    public func load(jsonString: String, rightNodeNames: [String]) {
+     数据加载的方法
+     给定因果二分图的json字符串数据，及全部右结点标识。该方法将根据这些数据重建整个二分图结构。
+     */
+    public func load(jsonString: String?, rightNodeNames: [String]) {
         clean()
-        let jsonData: Data = jsonString.data(using: .utf8)!
+        
+        for rightNodeName in rightNodeNames {
+            self.rightNodes[rightNodeName] = RightNode(rightNodeName)
+        }
+        
+        guard let _jsonString = jsonString else {
+            // 未被训练过的结构
+            return
+        }
+        
+        let jsonData: Data = _jsonString.data(using: .utf8)!
         
         guard let data = (try? JSONSerialization.jsonObject(with: jsonData, options: .mutableContainers)) as? [String: Any] else {
             fatalError("CauseEffectBipartiteGraph loading data error")
         }
         
-        for rightNodeName in rightNodeNames {
-            self.rightNodes[rightNodeName] = RightNode(rightNodeName)
-        }
         guard let leftNodes = data["LeftNode"] as? [[String: Any]] else {
             return
         }
@@ -57,9 +61,9 @@ public class CauseEffectBipartiteGraph {
     }
     
     /**
-        通过训练调整图的部分数值，从而改进最终的推断结论
-        给定证据（多个左结点->固定右结点）
-    */
+     通过训练调整图的部分数值，从而改进最终的推断结论
+     给定证据（多个左结点->固定右结点）
+     */
     public func train(_ leftNodeNames: [String], to rightNodeName: String) {
         guard let rightNode = rightNodes[rightNodeName] else {
             return
@@ -78,10 +82,10 @@ public class CauseEffectBipartiteGraph {
     }
     
     /**
-        根据现有图得出推断结论
-        给定多个事件（多个左结点）
-        返回结论（右结点标识）
-    */
+     根据现有图得出推断结论
+     给定多个事件（多个左结点）
+     返回结论（右结点标识）
+     */
     public func probability(withNames leftNodeNames: [String]) -> String {
         var leftNodes = [LeftNode]()
         for name in leftNodeNames {
@@ -94,8 +98,8 @@ public class CauseEffectBipartiteGraph {
     }
     
     /**
-        将整个图的数据进行封装，返回封装后的json字符串
-    */
+     将整个图的数据进行封装，返回封装后的json字符串
+     */
     public func package() -> String {
         var response = [String: Any]()
         var leftNodes = [[String: Any]]()
@@ -144,8 +148,8 @@ public class CauseEffectBipartiteGraph {
 }
 
 /**
-    因果二分图用到的左结点数据结构类
-*/
+ 因果二分图用到的左结点数据结构类
+ */
 class LeftNode {
     /* 该结点的标识字符串，应保证所有结点不重复 */
     var identifier: String!
@@ -161,8 +165,8 @@ class LeftNode {
     }
     
     /**
-        添加count条新的边，当该边存在则增加边上记录的值
-    */
+     添加count条新的边，当该边存在则增加边上记录的值
+     */
     func addLines(count: Int, to rightNode: RightNode) {
         self.count += count
         if self.rightNodes.contains(rightNode) {
@@ -178,8 +182,8 @@ class LeftNode {
     }
     
     /**
-        获取该结点到某一给定右结点的概率
-    */
+     获取该结点到某一给定右结点的概率
+     */
     func probability(to rightNode: RightNode) -> Float {
         guard let value = lines[rightNode] else {
             print("RightNode not exist")
@@ -189,8 +193,8 @@ class LeftNode {
     }
     
     /**
-        获取该结点到所有右结点的概率
-    */
+     获取该结点到所有右结点的概率
+     */
     func probabilities() -> [RightNode: Float] {
         var response = [RightNode: Float]()
         for rightNode in rightNodes {
@@ -202,8 +206,8 @@ class LeftNode {
 }
 
 /**
-    因果二分图用到的右结点数据结构类
-*/
+ 因果二分图用到的右结点数据结构类
+ */
 class RightNode: Hashable, CustomStringConvertible {
     /* 该结点的标识字符串，应保证所有结点不重复 */
     var identifier: String!
@@ -241,3 +245,5 @@ private func + (lhs: [RightNode: Float], rhs: [RightNode: Float]) -> [RightNode:
     }
     return response
 }
+
+
